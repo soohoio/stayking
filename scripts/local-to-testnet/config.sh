@@ -2,8 +2,15 @@
 
 set -eu
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-
+STATE=$SCRIPT_DIR/state
+LOGS=$SCRIPT_DIR/logs
+KEYS_LOGS=$LOGS/keys.log
+chain_name=gaiaTestnet
+STAYKING_LOGS=$LOGS/stayking.log
+STAYKING_HOME=$STATE/stayking1
+relayer_config=$STATE/relayer-${chain_name}/config
+relayer_logs=${LOGS}/relayer-${chain_name}.log
+DOCKER_COMPOSE="docker-compose -f $SCRIPT_DIR/docker-compose.yml"
 
 # DENOMS
 ATOM_DENOM='uatom'
@@ -27,8 +34,9 @@ STAYKING_RPC_PORT=26657
 STAYKING_ADMIN_ACCT=admin
 STAYKING_ADMIN_ADDRESS=sooho143umg272xger2eyurqfpjgt8u533s62mpz5weq
 STAYKING_FEE_ADDRESS=sooho1ckh2w55t4jkdz6ck74a32mqxeyrlt8ee2ws444 #wire act strong despair apple elite glide industry journey final finish coconut repair judge payment error soul bounce public sport flee library employ position
-STAYKING_MAIN_CMD="$SCRIPT_DIR/../../build/staykingd --home $SCRIPT_DIR/../state/${STAYKING_NODE_PREFIX}1"
+STAYKING_MAIN_CMD="$SCRIPT_DIR/../../build/staykingd --home $STATE/${STAYKING_NODE_PREFIX}1"
 
+HOST_CHAINS=(GAIA)
 #HOST
 HOST_CHAIN_ID=theta-testnet-001
 HOST_NUM_NODES=1
@@ -43,15 +51,6 @@ HOST_VAL_NAME_2=gval2
 HOST_VAL_ADDRESS_2=cosmos10v2nzm6wgasg28qvukh8dp5vfqfhwyak8q6zp8
 HOT_WALLET_ADDRESS=cosmos143umg272xger2eyurqfpjgt8u533s62mk7h94p
 
-STATE=$SCRIPT_DIR/../state
-LOGS=$SCRIPT_DIR/../logs
-KEYS_LOGS=$LOGS/keys.log
-chain_name=gaiaTestnet
-STAYKING_LOGS=$LOGS/stayking.log
-STAYKING_HOME=$STATE/stayking1
-relayer_config=$STATE/relayer-${chain_name}/config
-relayer_logs=${LOGS}/relayer-${chain_name}.log
-DOCKER_COMPOSE="docker-compose -f $SCRIPT_DIR/docker-compose.yml"
 
 HERMES_STAYKING_MNEMONIC="alter old invest friend relief slot swear pioneer syrup economy vendor tray focus hedgehog artist legend antenna hair almost donkey spice protect sustain increase"
 RELAYER_STAYKING_MNEMONIC="pride narrow breeze fitness sign bounce dose smart squirrel spell length federal replace coral lunar thunder vital push nuclear crouch fun accident hood need"
@@ -64,7 +63,7 @@ RELAYER_GAIA_TESTNET_MNEMONIC="resemble accident lake amateur physical jewel tax
 BLOCK_TIME='5s'
 STAYKING_DAY_EPOCH_DURATION="120s"
 STAYKING_EPOCH_EPOCH_DURATION="120s"
-UNBONDING_TIME="1814400s"
+STAYKING_UNBONDING_TIME="1814400s"
 MAX_DEPOSIT_PERIOD="30s"
 VOTING_PERIOD="30s"
 INITIAL_ANNUAL_PROVISIONS="10000000000000.000000000000000000"
