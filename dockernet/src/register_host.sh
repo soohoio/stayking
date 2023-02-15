@@ -48,6 +48,7 @@ while true; do
     fi
 done
 
+sleep 30
 # Set Withdrawal Address on init stage
 $STAYKING_MAIN_CMD tx stakeibc set-withdrawal-address --from $STAYKING_ADMIN_ACCT -y | TRIM_TX
 

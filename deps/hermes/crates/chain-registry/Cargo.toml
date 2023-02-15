@@ -4,7 +4,7 @@ version      = "0.2.0"
 edition      = "2021"
 license      = "Apache-2.0"
 keywords     = ["cosmos", "ibc", "relayer", "chain", "registry"]
-repository   = "https://github.com/informalsystems/hermes"
+repository   = "https://github.com/jongseokleedev/hermes"
 authors      = ["Informal Systems <hello@informal.systems>"]
 rust-version = "1.65"
 description  = """
@@ -12,7 +12,7 @@ description  = """
 """
 
 [dependencies]
-ibc-proto         = { version = "0.24.1" }
+ibc-proto = { git="https://github.com/jongseokleedev/ibc-proto-rs.git", branch="main"}
 ibc-relayer-types = { version = "0.21.0", path = "../relayer-types", features = ["std"] }
 tendermint-rpc    = { version = "0.28.0", features = ["http-client", "websocket-client"] }
 

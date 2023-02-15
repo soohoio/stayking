@@ -5,15 +5,23 @@ WORKDIR /opt
 RUN apt update && apt install git -y
 
 # ENV COMMIT_HASH=fd92eb6d17342bc83003f2067d6a9cd8261f2884
-ENV COMMIT_HASH=97b8e07279c7949d72a892271761c77d5642f859
-RUN git clone https://github.com/informalsystems/ibc-rs \
-    && cd ibc-rs \
+#ENV COMMIT_HASH=97b8e07279c7949d72a892271761c77d5642f859
+#RUN git clone https://github.com/informalsystems/ibc-rs \
+#    && cd ibc-rs \
+#    && git checkout $COMMIT_HASH \
+#    && cargo build --release
+
+ENV COMMIT_HASH=605a42e621889bd3d3cf0ad108179d2718d1b3b0
+RUN git clone https://github.com/jongseokleedev/hermes \
+    && cd hermes \
     && git checkout $COMMIT_HASH \
     && cargo build --release
 
+
 FROM debian:bullseye-slim
 
-COPY --from=builder /opt/ibc-rs/target/release/hermes /usr/local/bin/hermes
+#COPY --from=builder /opt/ibc-rs/target/release/hermes /usr/local/bin/hermes
+COPY --from=builder /opt/hermes/target/release/hermes /usr/local/bin/hermes
 RUN apt-get update \
     && adduser --system --home /home/hermes --disabled-password --disabled-login hermes -u 1000
 
