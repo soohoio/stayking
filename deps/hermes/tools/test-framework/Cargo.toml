@@ -1,12 +1,12 @@
 [package]
 name       = "ibc-test-framework"
-version    = "0.19.0"
+version    = "0.21.0"
 edition    = "2021"
 license    = "Apache-2.0"
 readme     = "README.md"
 keywords   = ["blockchain", "consensus", "cosmos", "ibc", "tendermint"]
 homepage   = "https://hermes.informal.systems/"
-repository = "https://github.com/informalsystems/ibc-rs"
+repository = "https://github.com/informalsystems/hermes"
 authors    = ["Informal Systems <hello@informal.systems>"]
 
 description = """
@@ -14,14 +14,12 @@ description = """
 """
 
 [dependencies]
-ibc             = { version = "=0.19.0",     path = "../../modules" }
-ibc-relayer     = { version = "=0.19.0",     path = "../../relayer" }
-ibc-relayer-cli = { version = "=1.0.0", path = "../../relayer-cli" }
-ibc-proto       = { version = "=0.20.1",     path = "../../proto" }
-tendermint      = { version = "=0.23.9" }
-tendermint-rpc  = { version = "=0.23.9", features = ["http-client", "websocket-client"] }
+ibc-relayer-types = { version = "=0.21.0",     path = "../../crates/relayer-types" }
+ibc-relayer       = { version = "=0.21.0",     path = "../../crates/relayer" }
+ibc-relayer-cli   = { version = "=1.2.0",      path = "../../crates/relayer-cli" }
+ibc-proto         = { version = "0.24.1" }
+tendermint-rpc    = { version = "0.28.0", features = ["http-client", "websocket-client"] }
 
-async-trait = "0.1.57"
 http = "0.2.8"
 tokio = { version = "1.0", features = ["full"] }
 tracing = "0.1.36"
@@ -32,11 +30,14 @@ rand = "0.8.5"
 hex = "0.4.3"
 serde = "1.0"
 serde_json = "1"
-serde_yaml = "0.9.11"
+serde_yaml = "0.9.16"
 itertools = "0.10"
 toml = "0.5"
 subtle-encoding = "0.5.1"
-sha2 = "0.10.5"
+sha2 = "0.10.6"
 crossbeam-channel = "0.5.5"
-semver = "1.0.13"
+semver = "1.0.16"
 flex-error = "0.4.4"
+prost = { version = "0.11" }
+tonic = { version = "0.8", features = ["tls", "tls-roots"] }
+hdpath = "0.6.1"

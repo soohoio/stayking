@@ -32,6 +32,7 @@
               gaia5
               gaia6
               gaia7
+              gaia8
               ica
               osmosis
               wasmd
@@ -40,8 +41,10 @@
               ibc-go-v3-simapp
               ibc-go-v4-simapp
               ibc-go-v5-simapp
+              ibc-go-v6-simapp
               apalache
               evmos
+              stride-no-admin
             ;
 
             python = nixpkgs.python3.withPackages (p: [

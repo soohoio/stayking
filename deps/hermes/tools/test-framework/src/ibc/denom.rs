@@ -4,7 +4,7 @@
 
 use core::fmt::{self, Display};
 use eyre::Report as Error;
-use ibc::core::ics24_host::identifier::{ChannelId, PortId};
+use ibc_relayer_types::core::ics24_host::identifier::{ChannelId, PortId};
 use sha2::{Digest, Sha256};
 use subtle_encoding::hex;
 
@@ -35,8 +35,6 @@ pub type TaggedDenom<Chain> = MonoTagged<Chain, Denom>;
 pub type TaggedDenomRef<'a, Chain> = MonoTagged<Chain, &'a Denom>;
 
 /**
-   A tagged version of `derive_ibc_denom` from the [`ibc`] module.
-
    Derives the denom on `ChainB` based on a denom on `ChainA` that has been
    transferred to `ChainB` via IBC.
 
@@ -62,7 +60,7 @@ pub fn derive_ibc_denom<ChainA, ChainB>(
         channel_id: &ChannelId,
         denom: &str,
     ) -> Result<String, Error> {
-        let transfer_path = format!("{}/{}/{}", port_id, channel_id, denom);
+        let transfer_path = format!("{port_id}/{channel_id}/{denom}");
         derive_denom_with_path(&transfer_path)
     }
 
@@ -75,7 +73,7 @@ pub fn derive_ibc_denom<ChainA, ChainB>(
         let denom_bytes = hasher.finalize();
         let denom_hex = String::from_utf8(hex::encode_upper(denom_bytes))?;
 
-        Ok(format!("ibc/{}", denom_hex))
+        Ok(format!("ibc/{denom_hex}"))
     }
 
     match denom.value() {
@@ -83,14 +81,14 @@ pub fn derive_ibc_denom<ChainA, ChainB>(
             let hashed = derive_denom(port_id.value(), channel_id.value(), denom)?;
 
             Ok(MonoTagged::new(Denom::Ibc {
-                path: format!("{}/{}", port_id, channel_id),
+                path: format!("{port_id}/{channel_id}"),
                 denom: denom.clone(),
                 hashed,
             }))
         }
         Denom::Ibc { path, denom, .. } => {
-            let new_path = format!("{}/{}/{}", port_id, channel_id, path);
-            let hashed = derive_denom_with_path(&format!("{}/{}", new_path, denom))?;
+            let new_path = format!("{port_id}/{channel_id}/{path}");
+            let hashed = derive_denom_with_path(&format!("{new_path}/{denom}"))?;
 
             Ok(MonoTagged::new(Denom::Ibc {
                 path: new_path,
@@ -128,11 +126,34 @@ impl Display for Denom {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             Denom::Base(denom) => {
-                write!(f, "{}", denom)
+                write!(f, "{denom}")
             }
             Denom::Ibc { hashed, .. } => {
-                write!(f, "{}", hashed)
+                write!(f, "{hashed}")
             }
         }
     }
 }
+
+impl PartialEq for Denom {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Base(d1), Self::Base(d2)) => d1 == d2,
+            (
+                Self::Ibc {
+                    path: p1,
+                    denom: d1,
+                    hashed: h1,
+                },
+                Self::Ibc {
+                    path: p2,
+                    denom: d2,
+                    hashed: h2,
+                },
+            ) => p1 == p2 && d1 == d2 && h1 == h2,
+            _ => self.as_str() == other.as_str(),
+        }
+    }
+}
+
+impl Eq for Denom {}

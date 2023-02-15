@@ -1,11 +1,11 @@
 use std::time::Duration;
 
-use ibc::core::ics02_client::trust_threshold::TrustThreshold;
+use ibc_relayer_types::core::ics02_client::trust_threshold::TrustThreshold;
 
-use ibc::clients::ics07_tendermint::client_state::ClientState as TmClientState;
 use ibc_relayer::chain::requests::{IncludeProof, QueryClientStateRequest, QueryHeight};
 use ibc_relayer::client_state::AnyClientState;
 use ibc_relayer::foreign_client::CreateOptions;
+use ibc_relayer_types::clients::ics07_tendermint::client_state::ClientState as TmClientState;
 
 use ibc_test_framework::prelude::*;
 
@@ -50,13 +50,13 @@ impl BinaryChainTest for ClientDefaultsTest {
         let state = query_client_state(chains.handle_b, client_id)?;
         assert_eq!(state.max_clock_drift, Duration::from_secs(24));
         assert_eq!(state.trusting_period, Duration::from_secs(120_000));
-        assert_eq!(state.trust_level, TrustThreshold::new(13, 23).unwrap());
+        assert_eq!(state.trust_threshold, TrustThreshold::new(13, 23).unwrap());
 
         let client_id = chains.foreign_clients.client_b_to_a.id();
         let state = query_client_state(chains.handle_a, client_id)?;
         assert_eq!(state.max_clock_drift, Duration::from_secs(14));
         assert_eq!(state.trusting_period, Duration::from_secs(340_000));
-        assert_eq!(state.trust_level, TrustThreshold::TWO_THIRDS);
+        assert_eq!(state.trust_threshold, TrustThreshold::TWO_THIRDS);
         Ok(())
     }
 }
@@ -90,13 +90,13 @@ impl BinaryChainTest for ClientOptionsTest {
         let state = query_client_state(chains.handle_b, client_id)?;
         assert_eq!(state.max_clock_drift, Duration::from_secs(3));
         assert_eq!(state.trusting_period, Duration::from_secs(120_000));
-        assert_eq!(state.trust_level, TrustThreshold::new(13, 23).unwrap());
+        assert_eq!(state.trust_threshold, TrustThreshold::new(13, 23).unwrap());
 
         let client_id = chains.foreign_clients.client_b_to_a.id();
         let state = query_client_state(chains.handle_a, client_id)?;
         assert_eq!(state.max_clock_drift, Duration::from_secs(6));
         assert_eq!(state.trusting_period, Duration::from_secs(340_000));
-        assert_eq!(state.trust_level, TrustThreshold::TWO_THIRDS);
+        assert_eq!(state.trust_threshold, TrustThreshold::TWO_THIRDS);
         Ok(())
     }
 }

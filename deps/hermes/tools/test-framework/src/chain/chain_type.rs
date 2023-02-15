@@ -1,6 +1,6 @@
 use core::str::FromStr;
-use ibc::core::ics24_host::identifier::ChainId;
 use ibc_relayer::config::AddressType;
+use ibc_relayer_types::core::ics24_host::identifier::ChainId;
 
 use crate::error::Error;
 use crate::util::random::{random_u32, random_unused_tcp_port};
@@ -28,10 +28,10 @@ impl ChainType {
                 if use_random_id {
                     ChainId::from_string(&format!("ibc-{}-{:x}", prefix, random_u32()))
                 } else {
-                    ChainId::from_string(&format!("ibc-{}", prefix))
+                    ChainId::from_string(&format!("ibc-{prefix}"))
                 }
             }
-            Self::Evmos => ChainId::from_string(&format!("evmos_9000-{}", prefix)),
+            Self::Evmos => ChainId::from_string(&format!("evmos_9000-{prefix}")),
         }
     }
 
@@ -43,7 +43,7 @@ impl ChainType {
             Self::Cosmos => {}
             Self::Evmos => {
                 res.push("--json-rpc.address".to_owned());
-                res.push(format!("localhost:{}", json_rpc_port));
+                res.push(format!("localhost:{json_rpc_port}"));
             }
         }
         res

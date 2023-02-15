@@ -9,11 +9,13 @@ use tracing::info;
 use crate::chain::builder::ChainBuilder;
 use crate::chain::config;
 use crate::chain::driver::ChainDriver;
+use crate::chain::ext::bootstrap::ChainBootstrapMethodsExt;
 use crate::error::Error;
 use crate::ibc::denom::Denom;
+use crate::ibc::token::Token;
 use crate::types::single::node::FullNode;
 use crate::types::wallet::{TestWallets, Wallet};
-use crate::util::random::{random_u32, random_u64_range};
+use crate::util::random::{random_u128_range, random_u32};
 
 /**
    Bootstrap a single full node with the provided [`ChainBuilder`] and
@@ -40,6 +42,7 @@ pub fn bootstrap_single_node(
     use_random_id: bool,
     config_modifier: impl FnOnce(&mut toml::Value) -> Result<(), Error>,
     genesis_modifier: impl FnOnce(&mut serde_json::Value) -> Result<(), Error>,
+    chain_number: usize,
 ) -> Result<FullNode, Error> {
     let stake_denom = Denom::base("stake");
 
@@ -52,9 +55,12 @@ pub fn bootstrap_single_node(
     // Evmos requires of at least 1_000_000_000_000_000_000 or else there will be the
     // error `error during handshake: error on replay: validator set is nil in genesis and still empty after InitChain`
     // when running `evmosd start`.
-    let initial_amount = random_u64_range(1_000_000_000_000_000_000, u64::MAX);
+    let initial_amount = random_u128_range(1_000_000_000_000_000_000, 2_000_000_000_000_000_000);
 
-    let chain_driver = builder.new_chain(prefix, use_random_id)?;
+    let initial_stake = Token::new(stake_denom, initial_amount);
+    let initial_coin = Token::new(denom.clone(), initial_amount);
+
+    let chain_driver = builder.new_chain(prefix, use_random_id, chain_number)?;
 
     chain_driver.initialize()?;
 
@@ -65,24 +71,15 @@ pub fn bootstrap_single_node(
     let user1 = add_wallet(&chain_driver, "user1", use_random_id)?;
     let user2 = add_wallet(&chain_driver, "user2", use_random_id)?;
 
-    chain_driver.add_genesis_account(&validator.address, &[(&stake_denom, initial_amount)])?;
+    chain_driver.add_genesis_account(&validator.address, &[&initial_stake])?;
 
-    chain_driver.add_genesis_validator(&validator.id, &stake_denom, initial_amount)?;
+    chain_driver.add_genesis_validator(&validator.id, &initial_stake)?;
 
-    chain_driver.add_genesis_account(
-        &user1.address,
-        &[(&stake_denom, initial_amount), (&denom, initial_amount)],
-    )?;
+    chain_driver.add_genesis_account(&user1.address, &[&initial_stake, &initial_coin])?;
 
-    chain_driver.add_genesis_account(
-        &user2.address,
-        &[(&stake_denom, initial_amount), (&denom, initial_amount)],
-    )?;
+    chain_driver.add_genesis_account(&user2.address, &[&initial_stake, &initial_coin])?;
 
-    chain_driver.add_genesis_account(
-        &relayer.address,
-        &[(&stake_denom, initial_amount), (&denom, initial_amount)],
-    )?;
+    chain_driver.add_genesis_account(&relayer.address, &[&initial_stake, &initial_coin])?;
 
     chain_driver.collect_gen_txs()?;
 
@@ -105,13 +102,14 @@ pub fn bootstrap_single_node(
         config::set_grpc_port(config, chain_driver.grpc_port)?;
         config::disable_grpc_web(config)?;
         config::disable_api(config)?;
+        config::set_minimum_gas_price(config, "0stake")?;
 
         Ok(())
     })?;
 
     let process = chain_driver.start()?;
 
-    chain_driver.assert_eventual_wallet_amount(&relayer.address, initial_amount, &denom)?;
+    chain_driver.assert_eventual_wallet_amount(&relayer.address, &initial_coin)?;
 
     info!(
         "started new chain {} at with home path {} and RPC address {}.",
@@ -152,7 +150,7 @@ pub fn bootstrap_single_node(
 fn add_wallet(driver: &ChainDriver, prefix: &str, use_random_id: bool) -> Result<Wallet, Error> {
     if use_random_id {
         let num = random_u32();
-        let wallet_id = format!("{}-{:x}", prefix, num);
+        let wallet_id = format!("{prefix}-{num:x}");
         driver.add_wallet(&wallet_id)
     } else {
         driver.add_wallet(prefix)

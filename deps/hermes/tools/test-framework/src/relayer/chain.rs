@@ -23,50 +23,38 @@
 use crossbeam_channel as channel;
 use tracing::Span;
 
-use ibc::core::ics02_client::events::UpdateClient;
-use ibc::core::ics03_connection::connection::IdentifiedConnectionEnd;
-use ibc::core::ics04_channel::channel::IdentifiedChannelEnd;
-use ibc::core::ics04_channel::packet::{PacketMsgType, Sequence};
-use ibc::core::ics23_commitment::merkle::MerkleProof;
-use ibc::{
-    core::ics03_connection::connection::ConnectionEnd,
-    core::ics03_connection::version::Version,
-    core::ics04_channel::channel::ChannelEnd,
-    core::ics23_commitment::commitment::CommitmentPrefix,
-    core::ics24_host::identifier::ChainId,
-    core::ics24_host::identifier::ChannelId,
-    core::ics24_host::identifier::{ClientId, ConnectionId, PortId},
-    events::IbcEvent,
-    proofs::Proofs,
-    signer::Signer,
-    Height,
-};
 use ibc_relayer::account::Balance;
 use ibc_relayer::chain::client::ClientSettings;
 use ibc_relayer::chain::endpoint::{ChainStatus, HealthCheck};
 use ibc_relayer::chain::handle::{ChainHandle, ChainRequest, Subscription};
-use ibc_relayer::chain::requests::{
-    IncludeProof, QueryBlockRequest, QueryChannelClientStateRequest, QueryChannelRequest,
-    QueryChannelsRequest, QueryClientConnectionsRequest, QueryClientStateRequest,
-    QueryClientStatesRequest, QueryConnectionChannelsRequest, QueryConnectionRequest,
-    QueryConnectionsRequest, QueryConsensusStateRequest, QueryConsensusStatesRequest,
-    QueryHostConsensusStateRequest, QueryNextSequenceReceiveRequest,
-    QueryPacketAcknowledgementRequest, QueryPacketAcknowledgementsRequest,
-    QueryPacketCommitmentRequest, QueryPacketCommitmentsRequest, QueryPacketReceiptRequest,
-    QueryTxRequest, QueryUnreceivedAcksRequest, QueryUnreceivedPacketsRequest,
-    QueryUpgradedClientStateRequest, QueryUpgradedConsensusStateRequest,
-};
+use ibc_relayer::chain::requests::*;
 use ibc_relayer::chain::tracking::TrackedMsgs;
 use ibc_relayer::client_state::{AnyClientState, IdentifiedAnyClientState};
 use ibc_relayer::config::ChainConfig;
 use ibc_relayer::connection::ConnectionMsgType;
-use ibc_relayer::consensus_state::{AnyConsensusState, AnyConsensusStateWithHeight};
+use ibc_relayer::consensus_state::AnyConsensusState;
 use ibc_relayer::denom::DenomTrace;
 use ibc_relayer::error::Error;
 use ibc_relayer::event::IbcEventWithHeight;
-use ibc_relayer::keyring::KeyEntry;
+use ibc_relayer::keyring::AnySigningKeyPair;
 use ibc_relayer::light_client::AnyHeader;
 use ibc_relayer::misbehaviour::MisbehaviourEvidence;
+use ibc_relayer_types::applications::ics31_icq::response::CrossChainQueryResponse;
+use ibc_relayer_types::core::ics02_client::events::UpdateClient;
+use ibc_relayer_types::core::ics03_connection::connection::ConnectionEnd;
+use ibc_relayer_types::core::ics03_connection::connection::IdentifiedConnectionEnd;
+use ibc_relayer_types::core::ics03_connection::version::Version;
+use ibc_relayer_types::core::ics04_channel::channel::ChannelEnd;
+use ibc_relayer_types::core::ics04_channel::channel::IdentifiedChannelEnd;
+use ibc_relayer_types::core::ics04_channel::packet::{PacketMsgType, Sequence};
+use ibc_relayer_types::core::ics23_commitment::commitment::CommitmentPrefix;
+use ibc_relayer_types::core::ics23_commitment::merkle::MerkleProof;
+use ibc_relayer_types::core::ics24_host::identifier::ChainId;
+use ibc_relayer_types::core::ics24_host::identifier::ChannelId;
+use ibc_relayer_types::core::ics24_host::identifier::{ClientId, ConnectionId, PortId};
+use ibc_relayer_types::proofs::Proofs;
+use ibc_relayer_types::signer::Signer;
+use ibc_relayer_types::Height;
 
 use crate::types::tagged::*;
 
@@ -122,11 +110,11 @@ where
         self.value().config()
     }
 
-    fn get_key(&self) -> Result<KeyEntry, Error> {
+    fn get_key(&self) -> Result<AnySigningKeyPair, Error> {
         self.value().get_key()
     }
 
-    fn add_key(&self, key_name: String, key: KeyEntry) -> Result<(), Error> {
+    fn add_key(&self, key_name: String, key: AnySigningKeyPair) -> Result<(), Error> {
         self.value().add_key(key_name, key)
     }
 
@@ -164,11 +152,11 @@ where
         self.value().query_client_connections(request)
     }
 
-    fn query_consensus_states(
+    fn query_consensus_state_heights(
         &self,
-        request: QueryConsensusStatesRequest,
-    ) -> Result<Vec<AnyConsensusStateWithHeight>, Error> {
-        self.value().query_consensus_states(request)
+        request: QueryConsensusStateHeightsRequest,
+    ) -> Result<Vec<Height>, Error> {
+        self.value().query_consensus_state_heights(request)
     }
 
     fn query_consensus_state(
@@ -386,11 +374,11 @@ where
         self.value().query_txs(request)
     }
 
-    fn query_blocks(
+    fn query_packet_events(
         &self,
-        request: QueryBlockRequest,
-    ) -> Result<(Vec<IbcEvent>, Vec<IbcEvent>), Error> {
-        self.value().query_blocks(request)
+        request: QueryPacketEventDataRequest,
+    ) -> Result<Vec<IbcEventWithHeight>, Error> {
+        self.value().query_packet_events(request)
     }
 
     fn query_host_consensus_state(
@@ -400,11 +388,36 @@ where
         self.value().query_host_consensus_state(request)
     }
 
-    fn query_balance(&self, key_name: Option<String>) -> Result<Balance, Error> {
-        self.value().query_balance(key_name)
+    fn query_balance(
+        &self,
+        key_name: Option<String>,
+        denom: Option<String>,
+    ) -> Result<Balance, Error> {
+        self.value().query_balance(key_name, denom)
+    }
+
+    fn query_all_balances(&self, key_name: Option<String>) -> Result<Vec<Balance>, Error> {
+        self.value().query_all_balances(key_name)
+    }
+
+    fn maybe_register_counterparty_payee(
+        &self,
+        channel_id: ChannelId,
+        port_id: PortId,
+        counterparty_payee: Signer,
+    ) -> Result<(), Error> {
+        self.value()
+            .maybe_register_counterparty_payee(channel_id, port_id, counterparty_payee)
     }
 
     fn query_denom_trace(&self, hash: String) -> Result<DenomTrace, Error> {
         self.value().query_denom_trace(hash)
+    }
+
+    fn cross_chain_query(
+        &self,
+        request: Vec<CrossChainQueryRequest>,
+    ) -> Result<Vec<CrossChainQueryResponse>, Error> {
+        self.value().cross_chain_query(request)
     }
 }

@@ -1,31 +1,30 @@
 [package]
 name       = "ibc-integration-test"
-version    = "0.19.0"
+version    = "0.21.0"
 edition    = "2021"
 license    = "Apache-2.0"
 readme     = "README.md"
 keywords   = ["blockchain", "consensus", "cosmos", "ibc", "tendermint"]
 homepage   = "https://hermes.informal.systems/"
-repository = "https://github.com/informalsystems/ibc-rs"
+repository = "https://github.com/informalsystems/hermes"
 authors    = ["Informal Systems <hello@informal.systems>"]
-
+rust-version = "1.65"
 description = """
   Integration tests for IBC Relayer
 """
 
 [dependencies]
-ibc             = { path = "../../modules" }
-ibc-relayer     = { path = "../../relayer" }
-ibc-relayer-cli = { path = "../../relayer-cli" }
-ibc-proto       = { path = "../../proto" }
+ibc-relayer-types  = { path = "../../crates/relayer-types" }
+ibc-relayer        = { path = "../../crates/relayer" }
 ibc-test-framework = { path = "../test-framework" }
-tendermint      = { version = "=0.23.9" }
-tendermint-rpc  = { version = "=0.23.9", features = ["http-client", "websocket-client"] }
 
+http = "0.2.8"
+prost = { version = "0.11" }
 serde_json = "1"
 time = "0.3"
 toml = "0.5"
-serde = "1.0.144"
+tonic = { version = "0.8", features = ["tls", "tls-roots"] }
+serde = "1.0.149"
 
 [features]
 default = []
@@ -33,8 +32,11 @@ example = []
 manual = []
 ordered = []
 ica = []
+ics29-fee = []
 experimental = []
 mbt = []
+forward-packet = []
+ics31 = []
 
 [[bin]]
 name = "test_setup_with_binary_channel"

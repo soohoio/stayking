@@ -1,25 +1,19 @@
-# Client Upgrade
+# Upgrading Clients
+If IBC clients need to be upgraded after their reference chains went through an upgrade, the following CLIs may be used.
 
-## Client Upgrade Command
-
-Use the `upgrade client` command to upgrade a client after a chain upgrade.
+## Upgrade Client Command
+Use the `upgrade client` command to upgrade a specific IBC client after a chain upgrade.
 
 ```shell
-USAGE:
-    hermes upgrade client --host-chain <HOST_CHAIN_ID> --client <CLIENT_ID> --upgrade-height <REFERENCE_UPGRADE_HEIGHT>
+{{#include ../../../templates/help_templates/upgrade/client.md}}
+```
 
-DESCRIPTION:
-    Upgrade an IBC client
+## Upgrade Clients Command
 
-REQUIRED:
-        --client <CLIENT_ID>
-            Identifier of the client to be upgraded
+Use the `upgrade clients` command to upgrade all IBC clients that target a specific (upgraded) chain.
 
-        --host-chain <HOST_CHAIN_ID>
-            Identifier of the chain that hosts the client
-
-        --upgrade-height <REFERENCE_UPGRADE_HEIGHT>
-            The height at which the reference chain halts for the client upgrade
+```shell
+{{#include ../../../templates/help_templates/upgrade/clients.md}}
 ```
 
 __Example__

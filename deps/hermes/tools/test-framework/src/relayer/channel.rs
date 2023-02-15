@@ -1,10 +1,11 @@
 use core::time::Duration;
 use eyre::eyre;
-use ibc::core::ics04_channel::channel::State as ChannelState;
-use ibc::core::ics04_channel::channel::{ChannelEnd, IdentifiedChannelEnd, Order};
 use ibc_relayer::chain::handle::ChainHandle;
 use ibc_relayer::chain::requests::{IncludeProof, QueryChannelRequest, QueryHeight};
 use ibc_relayer::channel::{extract_channel_id, Channel, ChannelSide};
+use ibc_relayer_types::core::ics04_channel::channel::State as ChannelState;
+use ibc_relayer_types::core::ics04_channel::channel::{ChannelEnd, IdentifiedChannelEnd, Order};
+use ibc_relayer_types::core::ics24_host::identifier::ConnectionId;
 
 use crate::error::Error;
 use crate::types::id::{
@@ -64,10 +65,67 @@ pub fn init_channel<ChainA: ChainHandle, ChainB: ChainHandle>(
     };
 
     let event = channel.build_chan_open_init_and_send()?;
-
     let channel_id = extract_channel_id(&event)?.clone();
-
     let channel2 = Channel::restore_from_event(handle_b.clone(), handle_a.clone(), event)?;
+
+    Ok((DualTagged::new(channel_id), channel2))
+}
+
+pub fn init_channel_optimistic<ChainA: ChainHandle, ChainB: ChainHandle>(
+    handle_a: &ChainA,
+    handle_b: &ChainB,
+    client_id_a: &TaggedClientIdRef<ChainA, ChainB>,
+    client_id_b: &TaggedClientIdRef<ChainB, ChainA>,
+    connection_id_b: &TaggedConnectionIdRef<ChainB, ChainA>,
+    src_port_id: &TaggedPortIdRef<ChainA, ChainB>,
+    dst_port_id: &TaggedPortIdRef<ChainB, ChainA>,
+) -> Result<TaggedChannelId<ChainB, ChainA>, Error> {
+    let channel = Channel {
+        connection_delay: Default::default(),
+        ordering: Order::Unordered,
+        a_side: ChannelSide::new(
+            handle_a.clone(),
+            client_id_a.cloned_value(),
+            ConnectionId::default(),
+            src_port_id.cloned_value(),
+            None,
+            None,
+        ),
+        b_side: ChannelSide::new(
+            handle_b.clone(),
+            client_id_b.cloned_value(),
+            connection_id_b.cloned_value(),
+            dst_port_id.cloned_value(),
+            None,
+            None,
+        ),
+    };
+
+    let event = channel.build_chan_open_init_and_send()?;
+    let channel_id = extract_channel_id(&event)?.clone();
+    Ok(DualTagged::new(channel_id))
+}
+
+pub fn try_channel<ChainA: ChainHandle, ChainB: ChainHandle>(
+    handle_a: &ChainA,
+    handle_b: &ChainB,
+    channel: &Channel<ChainB, ChainA>,
+) -> Result<(TaggedChannelId<ChainA, ChainB>, Channel<ChainA, ChainB>), Error> {
+    let event = channel.build_chan_open_try_and_send()?;
+    let channel_id = extract_channel_id(&event)?.clone();
+    let channel2 = Channel::restore_from_event(handle_a.clone(), handle_b.clone(), event)?;
+
+    Ok((DualTagged::new(channel_id), channel2))
+}
+
+pub fn ack_channel<ChainA: ChainHandle, ChainB: ChainHandle>(
+    handle_a: &ChainA,
+    handle_b: &ChainB,
+    channel: &Channel<ChainB, ChainA>,
+) -> Result<(TaggedChannelId<ChainA, ChainB>, Channel<ChainA, ChainB>), Error> {
+    let event = channel.build_chan_open_ack_and_send()?;
+    let channel_id = extract_channel_id(&event)?.clone();
+    let channel2 = Channel::restore_from_event(handle_a.clone(), handle_b.clone(), event)?;
 
     Ok((DualTagged::new(channel_id), channel2))
 }

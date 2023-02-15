@@ -151,12 +151,11 @@ if [ "$CHAIN" == "STAYKING" ]; then
         RELAYER_ADDRESS=$($MAIN_NODE_CMD keys show $RELAYER_ACCT --keyring-backend test -a)
         $MAIN_NODE_CMD add-genesis-account ${RELAYER_ADDRESS} ${VAL_TOKENS}${DENOM}
     done
-else 
+else
     # add a revenue account
     REV_ACCT_VAR=${CHAIN}_REV_ACCT
     REV_ACCT=${!REV_ACCT_VAR}
     echo $REV_MNEMONIC | $MAIN_NODE_CMD keys add $REV_ACCT --recover --keyring-backend=test >> $KEYS_LOGS 2>&1
-
     # add a relayer account
     RELAYER_ACCT=$(GET_VAR_VALUE     RELAYER_${CHAIN}_ACCT)
     RELAYER_MNEMONIC=$(GET_VAR_VALUE RELAYER_${CHAIN}_MNEMONIC)

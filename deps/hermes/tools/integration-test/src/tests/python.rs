@@ -6,10 +6,6 @@ use std::process::{Command, Stdio};
 struct PythonTest;
 
 impl TestOverrides for PythonTest {
-    fn modify_test_config(&self, config: &mut TestConfig) {
-        config.bootstrap_with_random_ids = false;
-    }
-
     fn modify_relayer_config(&self, config: &mut Config) {
         for mut chain in config.chains.iter_mut() {
             // Modify the key store type to `Store::Test` so that the wallet
@@ -45,10 +41,10 @@ impl BinaryChainTest for PythonTest {
         // package subdirectory automatically set by cargo
         let base_dir = env::var("PWD").unwrap_or(current_dir);
 
-        let command_args = [&format!("{}/e2e/run.py", base_dir), "-c", config_path];
+        let command_args = [&format!("{base_dir}/e2e/run.py"), "-c", config_path];
 
         let output = Command::new("python3")
-            .args(&command_args)
+            .args(command_args)
             .current_dir(base_dir)
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())

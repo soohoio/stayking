@@ -36,7 +36,6 @@ struct Test {
 
 impl TestOverrides for Test {
     fn modify_test_config(&self, config: &mut TestConfig) {
-        config.bootstrap_with_random_ids = false;
         config.chain_store_dir = self.store_dir.clone();
     }
 
@@ -70,8 +69,7 @@ fn main() -> Result<(), Error> {
     let store_dir = env::var("TEST_STORE_DIR").unwrap_or_else(|_| "data/test".to_string());
 
     println!(
-        "Setting up binary channel test environment at {}. (Overridable with $TEST_STORE_DIR)",
-        store_dir
+        "Setting up binary channel test environment at {store_dir}. (Overridable with $TEST_STORE_DIR)"
     );
 
     println!("Make sure the directory is clean for the setup to succeed");

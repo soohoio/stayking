@@ -4,7 +4,6 @@
 */
 
 use eyre::Report as Error;
-use ibc::core::ics24_host::identifier::ClientId;
 use ibc_relayer::chain::handle::{ChainHandle, CountingAndCachingChainHandle};
 use ibc_relayer::config::Config;
 use ibc_relayer::error::ErrorDetail as RelayerErrorDetail;
@@ -13,6 +12,7 @@ use ibc_relayer::foreign_client::{
 };
 use ibc_relayer::keyring::errors::ErrorDetail as KeyringErrorDetail;
 use ibc_relayer::registry::SharedRegistry;
+use ibc_relayer_types::core::ics24_host::identifier::ClientId;
 use std::fs;
 use std::path::Path;
 use tracing::{debug, info};
@@ -207,7 +207,7 @@ pub fn add_key_to_chain_handle<Chain: ChainHandle>(
     chain: &Chain,
     wallet: &Wallet,
 ) -> Result<(), Error> {
-    let res = chain.add_key(wallet.id.0.clone(), wallet.key.clone());
+    let res = chain.add_key(wallet.id.0.clone(), wallet.key.clone().into());
 
     // Ignore error if chain handle already have the given key
     match res {
@@ -263,7 +263,7 @@ pub fn add_chain_config(config: &mut Config, running_node: &FullNode) -> Result<
 pub fn save_relayer_config(config: &Config, config_path: &Path) -> Result<(), Error> {
     let config_str = toml::to_string_pretty(&config)?;
 
-    fs::write(&config_path, &config_str)?;
+    fs::write(config_path, &config_str)?;
 
     info!(
         "written hermes config.toml to {}:\n{}",
