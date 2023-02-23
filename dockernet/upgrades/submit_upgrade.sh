@@ -4,7 +4,7 @@ set -eu
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source ${SCRIPT_DIR}/../config.sh
 
-UPGRADE_HEIGHT=250
+UPGRADE_HEIGHT=460
 
 printf "PROPOSAL\n"
 $STAYKING_MAIN_CMD tx gov submit-proposal software-upgrade $UPGRADE_NAME \

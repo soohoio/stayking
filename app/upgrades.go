@@ -2,13 +2,13 @@ package app
 
 import (
 	"fmt"
-
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	upgrade_test "github.com/soohoio/stayking/app/upgrades/upgrade_test"
+	v4 "github.com/soohoio/stayking/app/upgrades/v4"
 
 	v2 "github.com/soohoio/stayking/app/upgrades/v2"
 	v3 "github.com/soohoio/stayking/app/upgrades/v3"
-	v4 "github.com/soohoio/stayking/app/upgrades/v4"
 	claimtypes "github.com/soohoio/stayking/x/claim/types"
 )
 
@@ -29,6 +29,12 @@ func (app *StayKingApp) setupUpgradeHandlers() {
 	app.UpgradeKeeper.SetUpgradeHandler(
 		v4.UpgradeName,
 		v4.CreateUpgradeHandler(app.mm, app.configurator),
+	)
+
+	// upgrade_test upgrade handler
+	app.UpgradeKeeper.SetUpgradeHandler(
+		upgrade_test.UpgradeName,
+		upgrade_test.CreateUpgradeHandler(app.mm, app.configurator),
 	)
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
