@@ -711,7 +711,7 @@ func init() {
 	proto.RegisterType((*GenesisState)(nil), "stride.records.V2GenesisState")
 }
 
-func init() { proto.RegisterFile("stride/records/genesis.proto", fileDescriptor_98cfd0253c8b6797) }
+func init() { proto.RegisterFile("stayking/records/genesis.proto", fileDescriptor_98cfd0253c8b6797) }
 
 var fileDescriptor_98cfd0253c8b6797 = []byte{
 	// 944 bytes of a gzipped FileDescriptorProto
@@ -815,7 +815,7 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams:     []grpc.StreamDesc{},
-	Metadata:    "stride/records/genesis.proto",
+	Metadata:    "stayking/records/genesis.proto",
 }
 
 func (m *UserRedemptionRecord) Marshal() (dAtA []byte, err error) {

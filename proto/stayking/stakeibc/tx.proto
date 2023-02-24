@@ -36,10 +36,7 @@ service Msg {
 
 message MsgLiquidStake {
   string creator = 1;
-  string amount = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
+  uint64 amount = 2;
   // TODO(TEST-86): Update Denom -> HostDenom
   string host_denom = 3;
 }
@@ -49,10 +46,7 @@ message MsgLiquidStakeResponse {}
 message MsgClearBalance {
   string creator = 1;
   string chain_id = 2;
-  string amount = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
+  uint64 amount = 3;
   string channel = 4;
 }
 
@@ -60,10 +54,7 @@ message MsgClearBalanceResponse {}
 
 message MsgRedeemStake {
   string creator = 1;
-  string amount = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
+  uint64 amount = 2;
   string host_zone = 3;
   string receiver = 4;
 }

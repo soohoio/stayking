@@ -193,7 +193,7 @@ func init() {
 	proto.RegisterType((*Validator)(nil), "stride.stakeibc.V2Validator")
 }
 
-func init() { proto.RegisterFile("stride/stakeibc/validator.proto", fileDescriptor_5d2f32e16bd6ab8f) }
+func init() { proto.RegisterFile("stayking/stakeibc/validator.proto", fileDescriptor_5d2f32e16bd6ab8f) }
 
 var fileDescriptor_5d2f32e16bd6ab8f = []byte{
 	// 486 bytes of a gzipped FileDescriptorProto
