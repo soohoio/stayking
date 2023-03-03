@@ -1,0 +1,59 @@
+global:
+    api-listen-addr: :5183
+    timeout: 10s
+    memo: ""
+    light-cache-size: 20
+chains:
+    gaiaTestnet:
+        type: cosmos
+        value:
+            key-directory: /home/relayer/.relayer/keys/theta-testnet-001
+            key: rly2
+            chain-id: theta-testnet-001
+            rpc-addr: https://cosmos-testnet-archive.allthatnode.com:26657/AowVlngs1uvTAB6cbCEF2y3Xwy0Qk7qL
+            account-prefix: cosmos
+            keyring-backend: test
+            gas-adjustment: 1.2
+            gas-prices: 0.01uatom
+            min-gas-amount: 0
+            debug: true
+            timeout: 60s
+            block-timeout: ""
+            output-format: json
+            sign-mode: direct
+            extra-codecs: []
+            coin-type: 0
+            broadcast-mode: batch
+    stayking:
+        type: cosmos
+        value:
+            key-directory: /home/relayer/.relayer/keys/stayking-testnet-001
+            key: rly1
+            chain-id: stayking-testnet-001
+            rpc-addr: http://stayking1:26657
+            account-prefix: sooho
+            keyring-backend: test
+            gas-adjustment: 1.2
+            gas-prices: 0.01ustay
+            min-gas-amount: 0
+            debug: true
+            timeout: 60s
+            block-timeout: ""
+            output-format: json
+            sign-mode: direct
+            extra-codecs: []
+            coin-type: 0
+            broadcast-mode: batch
+paths:
+    stayking-gaiaTestnet:
+        src:
+            chain-id: stayking-testnet-001
+            client-id: 07-tendermint-0
+            connection-id: connection-0
+        dst:
+            chain-id: theta-testnet-001
+            client-id: 07-tendermint-1734
+            connection-id: connection-2036
+        src-channel-filter:
+            rule: ""
+            channel-list: []

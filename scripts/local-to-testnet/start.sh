@@ -65,7 +65,7 @@ else
 fi
 
 echo "register host !"
-bash $SCRIPT_DIR/register_host.sh
+#bash $SCRIPT_DIR/register_host.sh
 
 echo "create logs !"
 $SCRIPT_DIR/create_logs.sh &
